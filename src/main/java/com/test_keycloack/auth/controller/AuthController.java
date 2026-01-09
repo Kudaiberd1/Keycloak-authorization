@@ -30,9 +30,16 @@ public class AuthController {
     }
 
     @PostMapping(value = "/logout")
-    public ResponseEntity<Void> logout(@RequestBody Map<String, String> body){
+    public ResponseEntity<Void> logout(@RequestBody Map<String, String> body) throws BadRequestException {
         log.info("Logout attempt");
         keycloakService.logout(body.get("refreshToken"));
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PostMapping(value = "/refresh")
+    public ResponseEntity<AuthResponse> refresh(@RequestBody Map<String, String> body) throws BadRequestException {
+        log.info("Refresh attempt");
+        String refreshToken = body.get("refreshToken");
+        return ResponseEntity.ok(keycloakService.refreshToken(refreshToken));
     }
 }
