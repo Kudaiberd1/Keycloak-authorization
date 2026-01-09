@@ -8,6 +8,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Collection;
 import java.util.Map;
@@ -21,10 +22,10 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
     private final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter =
             new JwtGrantedAuthoritiesConverter();
 
-    @org.springframework.beans.factory.annotation.Value("${jwt.auth.converter.principle-attribute:sub}")
+    @Value("${jwt.auth.converter.principle-attribute:sub}")
     private String principleAttribute;
 
-    @org.springframework.beans.factory.annotation.Value("${jwt.auth.converter.resource-id:my-client}")
+    @Value("${jwt.auth.converter.resource-id:my-client}")
     private String resourceId;
 
     @Override

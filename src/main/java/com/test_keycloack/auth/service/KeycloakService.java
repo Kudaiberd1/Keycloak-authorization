@@ -19,14 +19,14 @@ import java.util.Map;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class KeycloackService {
+public class KeycloakService {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final MessageSource messageSource;
 
-    @Value("spring.application.jwt.keycloack.url")
-    private String keycloackUrl;
-    @Value("spring.application.jwt.keycloack.client-id")
+    @Value("${spring.application.jwt.keycloak.url}")
+    private String keycloakUrl;
+    @Value("${spring.application.jwt.keycloak.client-id}")
     private String clientId;
 
     public AuthResponse getAuthResponse(String username, String password) throws BadRequestException {
@@ -47,6 +47,9 @@ public class KeycloackService {
 
         ResponseEntity<Map> response = restTemplate.postForEntity(tokenUrl, request, Map.class);
 
+        log.info(tokenUrl);
+        log.info(response.toString());
+
         if(response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
             String accessToken = response.getBody().get("access_token").toString();
             String refreshToken = response.getBody().get("refresh_token").toString();
@@ -65,8 +68,10 @@ public class KeycloackService {
         }
     }
 
+
+
     public String buildTokenEndpoint(String endpointType){
-        String base = keycloackUrl;
+        String base = keycloakUrl;
         return base + "/protocol/openid-connect/" + endpointType;
     }
 }
