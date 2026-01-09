@@ -68,7 +68,27 @@ public class KeycloakService {
         }
     }
 
+    public void logout(String refreshToken) {
+        String tokenUrl = buildTokenEndpoint("logout");
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+        form.add("client_id", clientId);
+        form.add("refresh_token", refreshToken);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(form, headers);
+
+        ResponseEntity<Map> response = restTemplate.postForEntity(tokenUrl, request, Map.class);
+        if(response.getStatusCode().is2xxSuccessful()) {
+            log.info("User logged out successfully");
+        }else{
+            log.error("Failed to logout user: {}", response.getStatusCode());
+            throw new RuntimeException(messageSource.getMessage("error.auth.failedToLogout",
+                    new Object[]{response.getStatusCode()}, LocaleContextHolder.getLocale()));
+        }
+    }
 
     public String buildTokenEndpoint(String endpointType){
         String base = keycloakUrl;

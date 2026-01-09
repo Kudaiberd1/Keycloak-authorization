@@ -6,13 +6,13 @@ import com.test_keycloack.auth.service.KeycloakService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -27,5 +27,12 @@ public class AuthController {
         log.info("Login attempt for user: {}", userAuthRequest.username());
         AuthResponse authResponse = keycloakService.getAuthResponse(userAuthRequest.username(), userAuthRequest.password());
         return ResponseEntity.ok(authResponse);
+    }
+
+    @PostMapping(value = "/logout")
+    public ResponseEntity<Void> logout(@RequestBody Map<String, String> body){
+        log.info("Logout attempt");
+        keycloakService.logout(body.get("refreshToken"));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
