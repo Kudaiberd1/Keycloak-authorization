@@ -6,7 +6,6 @@ import com.test_keycloack.auth.exceptions.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
-import org.springframework.context.MessageSource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -23,12 +22,12 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class KeycloakService {
 
-    private final MessageSource messageSource;
-
     @Value("${spring.application.jwt.keycloak.url}")
     private String keycloakUrl;
     @Value("${spring.application.jwt.keycloak.client-id}")
     private String clientId;
+    @Value("${spring.application.jwt.keycloak.client-secret}")
+    private String clientSecret;
 
     public AuthResponse getAuthResponse(String username, String password) throws BadRequestException {
         if (username == null || username.isBlank() || password == null || password.isBlank()) {
@@ -42,6 +41,7 @@ public class KeycloakService {
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
         form.add("grant_type", "password");
         form.add("client_id", clientId);
+        form.add("client_secret", clientSecret);
         form.add("username", username);
         form.add("password", password);
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(form, headers);
@@ -83,6 +83,7 @@ public class KeycloakService {
 
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
         form.add("client_id", clientId);
+        form.add("client_secret", clientSecret);
         form.add("refresh_token", refreshToken);
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(form, headers);
@@ -115,6 +116,7 @@ public class KeycloakService {
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
         form.add("grant_type", "refresh_token");
         form.add("client_id", clientId);
+        form.add("client_secret", clientSecret);
         form.add("refresh_token", refreshToken);
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(form, headers);
 
