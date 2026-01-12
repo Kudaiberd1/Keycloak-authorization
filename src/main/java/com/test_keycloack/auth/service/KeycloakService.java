@@ -2,11 +2,13 @@ package com.test_keycloack.auth.service;
 
 import com.test_keycloack.auth.dto.response.AuthResponse;
 import com.test_keycloack.auth.dto.response.KeycloakTokenResponse;
+import com.test_keycloack.auth.dto.response.UserDetailsResponse;
 import com.test_keycloack.auth.exceptions.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -22,6 +24,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class KeycloakService {
 
+    private final RestTemplate restTemplate = new RestTemplate();
+
     @Value("${spring.application.jwt.keycloak.url}")
     private String keycloakUrl;
     @Value("${spring.application.jwt.keycloak.client-id}")
@@ -29,7 +33,19 @@ public class KeycloakService {
     @Value("${spring.application.jwt.keycloak.client-secret}")
     private String clientSecret;
 
+    public UserDetailsResponse getUserDetails(Jwt jwt) {
+        log.info("Getting user details for user {}", jwt.getClaim("name").toString());
+        return UserDetailsResponse.builder()
+                .username(jwt.getClaim("preferred_username"))
+                .email(jwt.getClaim("email"))
+                .firstName(jwt.getClaim("given_name"))
+                .lastName(jwt.getClaim("family_name"))
+                .build();
+
+    }
+
     public AuthResponse getAuthResponse(String username, String password) throws BadRequestException {
+        log.info("Login attempt for user: {}", username);
         if (username == null || username.isBlank() || password == null || password.isBlank()) {
             throw new BadRequestException("Username or password is null or blank");
         }
@@ -45,8 +61,6 @@ public class KeycloakService {
         form.add("username", username);
         form.add("password", password);
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(form, headers);
-
-        RestTemplate restTemplate = new RestTemplate();
 
         try {
             ResponseEntity<KeycloakTokenResponse> response = restTemplate.postForEntity(tokenUrl, request, KeycloakTokenResponse.class);
@@ -73,6 +87,7 @@ public class KeycloakService {
     }
 
     public void logout(String refreshToken) throws BadRequestException {
+        log.info("Logout attempt");
         String tokenUrl = buildTokenEndpoint("logout");
         if(refreshToken == null || refreshToken.isBlank()) {
             throw new BadRequestException("Refresh token is empty");
@@ -105,6 +120,7 @@ public class KeycloakService {
     }
 
     public AuthResponse refreshToken(String refreshToken) throws BadRequestException {
+        log.info("Refresh attempt");
         String tokenUrl = buildTokenEndpoint("token");
         if(refreshToken == null || refreshToken.isBlank()) {
             throw new BadRequestException("Refresh token is empty");
